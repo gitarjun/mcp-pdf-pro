@@ -1,7 +1,7 @@
 [project]
 name = "mcp-pdf-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "An MCP server for building persistent, image-aware documents and rendering them to PDF with Playwright."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

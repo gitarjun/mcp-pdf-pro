@@ -40,7 +40,7 @@ Add this to your `cline_mcp_settings.json` (or your preferred MCP host config).
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/your-org/mcp-pdf-agent.git",
+        "git+https://github.com/gitarjun/mcp-pdf-pro.git",
         "pdf-server"
       ]
     }
@@ -58,6 +58,10 @@ Documents are created implicitly the first time content or an image is added for
 *   `add_image(doc_id, image_data)`: Processes and embeds an image (supports absolute local paths, Base64, and URLs).
 *   `finalize_pdf(doc_id, filename)`: Renders the accumulated content into a PDF.
 *   `undo(doc_id)`: Reverts the last addition to the document.
+
+## 📚 Available Resource
+
+*   `draft://{doc_id}`: Returns the current HTML draft for the given document session.
 
 ## 🩺 Troubleshooting
 
