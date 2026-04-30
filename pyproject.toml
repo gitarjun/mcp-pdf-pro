@@ -1,0 +1,21 @@
+[project]
+name = "mcp-pdf-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.13.0.2",
+    "httpx>=0.28.1",
+    "markdown>=3.10.2",
+    "playwright==1.58.0",
+]
+
+[project.scripts]
+pdf-server = "mcp_pdf_agent:main"
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = []
