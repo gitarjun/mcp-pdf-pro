@@ -13,8 +13,7 @@ from . import config, db, renderer
 
 mcp = FastMCP("Pro-Doc-Agent")
 
-
-# --- MISSING RESOURCE RE-INTEGRATED ---
+# --- RESOURCES ---
 @mcp.resource("draft://{doc_id}")
 async def get_draft(doc_id: str) -> str:
     """Allows the agent to read the current state of the document (HTML)."""
