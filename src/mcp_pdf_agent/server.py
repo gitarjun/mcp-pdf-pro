@@ -1,13 +1,15 @@
-import markdown
-import shutil
-import pathlib
-from fastmcp import FastMCP
-from typing import Annotated
 import base64
 import binascii
+import pathlib
+import shutil
 import httpx
 import uuid
-from . import db, renderer, config
+from typing import Annotated
+
+import markdown
+from fastmcp import FastMCP
+
+from . import config, db, renderer
 
 mcp = FastMCP("Pro-Doc-Agent")
 
@@ -23,20 +25,25 @@ async def get_draft(doc_id: str) -> str:
 # --- TOOLS ---
 @mcp.tool()
 async def add_text(
-        doc_id: Annotated[str, "The unique identifier for the document session"],
-    md_text: Annotated[str, "The Markdown content to append (supports tables, lists, and headers)"]
+    doc_id: Annotated[str, "The unique identifier for the document session"],
+    md_text: Annotated[
+        str, "The Markdown content to append (supports tables, lists, and headers)"
+    ],
 ) -> str:
     """Appends Markdown content to a document."""
     current_html = db.get_latest_html(doc_id)
-    new_content = markdown.markdown(md_text, extensions=['tables'])
+    new_content = markdown.markdown(md_text, extensions=["tables"])
     db.save_document(doc_id, f"{current_html}\n<section>{new_content}</section>")
     return f"Content added to {doc_id}."
 
 
 @mcp.tool()
 async def add_image(
-        doc_id: Annotated[str, "The unique identifier for the document session"],
-        image_data: Annotated[str, "The FULL ABSOLUTE PATH, a Base64 string, or a URL (http/https) of the image"]
+    doc_id: Annotated[str, "The unique identifier for the document session"],
+    image_data: Annotated[
+        str,
+        "The FULL ABSOLUTE PATH, a Base64 string, or a URL (http/https) of the image",
+    ],
 ) -> str:
     """Embeds an image into the document from a local path, Base64 string, or remote URL."""
 
@@ -94,7 +101,9 @@ async def add_image(
 
 
 @mcp.tool()
-async def undo(doc_id: Annotated[str, "The unique identifier for the document session"]) -> str:
+async def undo(
+    doc_id: Annotated[str, "The unique identifier for the document session"],
+) -> str:
     """Reverts to the previous version of the document."""
     if db.delete_latest_version(doc_id):
         return "Last action undone."
@@ -102,10 +111,14 @@ async def undo(doc_id: Annotated[str, "The unique identifier for the document se
 
 
 @mcp.tool()
-async def finalize_pdf(doc_id: Annotated[str, "The unique identifier for the document session"], filename: Annotated[str,"Full path to location where pdf has to be saved"]) -> str:
+async def finalize_pdf(
+    doc_id: Annotated[str, "The unique identifier for the document session"],
+    filename: Annotated[str, "Full path to location where pdf has to be saved"],
+) -> str:
     """Renders the final PDF."""
     html = db.get_latest_html(doc_id)
-    if not html: return "Error: Document empty."
+    if not html:
+        return "Error: Document empty."
     path = await renderer.render_pdf(html, filename)
     return f"PDF saved to {path}"
 

@@ -1,14 +1,18 @@
+import base64
 import os
 import pathlib
-import base64
 import re
-import sys
+
 from playwright.async_api import async_playwright
+
 from . import config
 
 
 def inject_base64_images(html_body: str) -> str:
-    """Finds file:// paths and replaces them with Base64 data."""
+    """
+    Finds file:// paths and replaces them with Base64 data URIs.
+    This ensures the PDF is self-contained and avoids Chromium security blocks.
+    """
 
     def substitute_base64(match):
         raw_path = match.group(1)
@@ -22,10 +26,8 @@ def inject_base64_images(html_body: str) -> str:
                 with open(path, "rb") as img_file:
                     encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
                     return f'src="data:{mime_type};base64,{encoded_string}"'
-            except Exception as e:
-                print(f"DEBUG: Read error for {path.name}: {e}", file=sys.stderr)
-        else:
-            print(f"DEBUG: File not found: {clean_path}", file=sys.stderr)
+            except Exception:
+                pass  # Fallback to original if file reading fails
         return match.group(0)
 
     return re.sub(r'src=["\'](file://[^"\']+)["\']', substitute_base64, html_body)
@@ -63,12 +65,7 @@ async def render_pdf(html_body: str, output_filename: str):
             path=output_path,
             format="A4",
             print_background=True,
-            margin={
-                "top": "20mm",
-                "bottom": "20mm",
-                "left": "20mm",
-                "right": "20mm"
-            }
+            margin={"top": "20mm", "bottom": "20mm", "left": "20mm", "right": "20mm"},
         )
         await browser.close()
 
