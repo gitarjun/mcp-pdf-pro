@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import pathlib
 import re
@@ -6,6 +7,8 @@ import re
 from playwright.async_api import async_playwright
 
 from . import config
+
+logger = logging.getLogger(__name__)
 
 
 def inject_base64_images(html_body: str) -> str:
@@ -27,6 +30,7 @@ def inject_base64_images(html_body: str) -> str:
                     encoded_string = base64.b64encode(img_file.read()).decode("utf-8")
                     return f'src="data:{mime_type};base64,{encoded_string}"'
             except Exception:
+                logger.exception("Failed to inline image at path=%s", path)
                 pass  # Fallback to original if file reading fails
         return match.group(0)
 

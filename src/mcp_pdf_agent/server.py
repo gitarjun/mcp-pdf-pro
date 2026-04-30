@@ -2,6 +2,7 @@ import base64
 import binascii
 import pathlib
 import shutil
+import logging
 import httpx
 import uuid
 from typing import Annotated
@@ -10,8 +11,12 @@ import markdown
 from fastmcp import FastMCP
 
 from . import config, db, renderer
+from .logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 mcp = FastMCP("Pro-Doc-Agent")
+
 
 # --- RESOURCES ---
 @mcp.resource("draft://{doc_id}")
@@ -65,6 +70,9 @@ async def add_image(
                 with open(dest_path, "wb") as f:
                     f.write(response.content)
         except Exception as e:
+            logger.exception(
+                "Failed to download image for doc_id=%s from url=%s", doc_id, image_data
+            )
             return f"Error downloading image from URL: {str(e)}"
 
     # 2. Handle Base64 String
@@ -76,6 +84,7 @@ async def add_image(
             with open(dest_path, "wb") as f:
                 f.write(base64.b64decode(encoded))
         except (ValueError, binascii.Error) as e:
+            logger.exception("Failed to decode base64 image for doc_id=%s", doc_id)
             return f"Error: Invalid Base64 data. {str(e)}"
 
     # 3. Handle Local File Path
@@ -117,11 +126,20 @@ async def finalize_pdf(
     """Renders the final PDF."""
     html = db.get_latest_html(doc_id)
     if not html:
+        logger.warning("Attempted to finalize empty document doc_id=%s", doc_id)
         return "Error: Document empty."
-    path = await renderer.render_pdf(html, filename)
+    try:
+        path = await renderer.render_pdf(html, filename)
+    except Exception:
+        logger.exception(
+            "Failed to render PDF for doc_id=%s to filename=%s", doc_id, filename
+        )
+        raise
     return f"PDF saved to {path}"
 
 
 def main():
+    configure_logging()
     db.init_db()
+    logger.info("Starting Pro-Doc-Agent MCP server")
     mcp.run()
