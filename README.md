@@ -1,12 +1,12 @@
 # 📄 MCP PDF Agent
 
-An **Model Context Protocol (MCP)** server designed for AI agents to incrementally build, manage, and render high-fidelity PDF documents. 
+A **Model Context Protocol (MCP)** server designed for AI agents to incrementally build, manage, and render high-fidelity PDF documents.
 
 Unlike basic PDF generators, this agent handles **session persistence**, **remote asset caching**, and **Base64 injection** to ensure that complex documents with images and tables render correctly every time.
 
 ## ✨ Key Features
 
-*   **Stateful Document Sessions:** Initialize a document ID and append content over multiple turns.
+*   **Stateful Document Sessions:** Reuse a document ID to append content over multiple turns.
 *   **Smart Asset Management:** Automatically fetches remote (HTTP/S) images and stores them locally to prevent broken links during rendering.
 *   **Self-Contained Rendering:** Injects images as Base64 data URIs into the HTML before generation, bypassing Chromium's strict local file security policies.
 *   **Enterprise Styling:** Built-in CSS optimized for professional reports, including clean typography, styled tables, and centered figures.
@@ -66,7 +66,7 @@ Documents are created implicitly the first time content or an image is added for
 ## 🩺 Troubleshooting
 
 ### "Executable doesn't exist" (Playwright)
-Ensure the `PLAYWRIGHT_BROWSERS_PATH` in your config matches the output of:
+If your environment requires `PLAYWRIGHT_BROWSERS_PATH`, set it to the Playwright browser install directory. For a local checkout, you can inspect it with:
 ```bash
 uv run playwright install --show-install-dir
 ```
@@ -75,7 +75,10 @@ uv run playwright install --show-install-dir
 This server uses **Base64 injection**. If images are missing, check the MCP logs and `~/.mcp-pdf-agent/server.log` to ensure the files exist in `~/.mcp-pdf-agent/document_assets/`. The server will fall back to standard links if the local file cannot be read.
 
 ### Code Changes Not Reflecting
-If using `uvx`, your code might be cached. Use the `uv run --directory` method shown in the configuration section to force the server to use your local source files.
+If using `uvx`, your code may be cached. For local development, clone the repository and run the server from the local checkout with:
+```bash
+uv run pdf-server
+```
 
 ## 📜 License
 MIT
