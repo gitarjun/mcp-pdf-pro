@@ -24,7 +24,7 @@ SQL_SELECT_LATEST = "SELECT html_content FROM doc_history WHERE doc_id = ? ORDER
 
 SQL_SELECT_HISTORY_IDS = "SELECT id FROM doc_history WHERE doc_id = ? ORDER BY id DESC"
 
-SQL_DELETE_BY_ID = "DELETE FROM id_history WHERE id = ?"
+SQL_DELETE_BY_ID = "DELETE FROM doc_history WHERE id = ?"
 
 # Rendering Constants
 DEFAULT_CSS = """

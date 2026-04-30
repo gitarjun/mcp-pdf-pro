@@ -31,14 +31,15 @@ def inject_base64_images(html_body: str) -> str:
     return re.sub(r'src=["\'](file://[^"\']+)["\']', substitute_base64, html_body)
 
 
-async def render_pdf(html_body: str, output_filename: str, doc_id: str = "debug"):
-    """Saves a debug HTML file, then renders the PDF."""
+async def render_pdf(html_body: str, output_filename: str):
+    """Renders a self-contained PDF from HTML body."""
 
+    # Inject images as Base64 to make the HTML portable
     processed_html = inject_base64_images(html_body)
 
     full_html = f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
         <head>
             <meta charset="UTF-8">
             <style>{config.DEFAULT_CSS}</style>
@@ -47,32 +48,27 @@ async def render_pdf(html_body: str, output_filename: str, doc_id: str = "debug"
     </html>
     """
 
-    # --- DEBUG STEP ---
-    # Save the HTML to the document's specific folder for manual inspection
-    debug_dir = config.STORAGE_DIR / doc_id
-    debug_dir.mkdir(exist_ok=True)
-    debug_file_path = debug_dir / "last_render_debug.html"
-
-    with open(debug_file_path, "w", encoding="utf-8") as f:
-        f.write(full_html)
-
-    print(f"DEBUG: HTML artifact saved to {debug_file_path}", file=sys.stderr)
-    # ------------------
-
     output_path = os.path.abspath(output_filename)
 
     async with async_playwright() as p:
+        # Launch Chromium (Headless)
         browser = await p.chromium.launch()
         page = await browser.new_page()
 
-        # Load the physical file we just created to ensure the "Origin" is local
-        await page.goto(f"file://{debug_file_path.absolute()}", wait_until="networkidle")
+        # Set content directly - Base64 makes the HTML self-contained
+        await page.set_content(full_html, wait_until="networkidle")
 
+        # Generate the PDF with standard professional margins
         await page.pdf(
             path=output_path,
             format="A4",
             print_background=True,
-            margin={"top": "20mm", "bottom": "20mm", "left": "20mm", "right": "20mm"}
+            margin={
+                "top": "20mm",
+                "bottom": "20mm",
+                "left": "20mm",
+                "right": "20mm"
+            }
         )
         await browser.close()
 

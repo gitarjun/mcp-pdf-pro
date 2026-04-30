@@ -20,6 +20,6 @@ def delete_latest_version(doc_id: str) -> bool:
         cursor = conn.execute(config.SQL_SELECT_HISTORY_IDS, (doc_id,))
         rows = cursor.fetchall()
         if len(rows) > 1:
-            conn.execute("DELETE FROM doc_history WHERE id = ?", (rows[0][0],))
+            conn.execute(config.SQL_DELETE_BY_ID, (rows[0][0],))
             return True
     return False
